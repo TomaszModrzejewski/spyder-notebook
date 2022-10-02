@@ -225,8 +225,7 @@ class NotebookMainWidget(PluginMainWidget):
         elif theme_config == 'light':
             return False
         else:
-            raise RuntimeError('theme config corrupted, value = {}'
-                               .format(theme_config))
+            raise RuntimeError(f'theme config corrupted, value = {theme_config}')
 
     def refresh_plugin(self):
         """Refresh tabwidget."""
@@ -274,8 +273,7 @@ class NotebookMainWidget(PluginMainWidget):
 
     def open_previous_session(self):
         """Open notebooks left open in the previous session."""
-        filenames = self.get_conf('opened_notebooks')
-        if filenames:
+        if filenames := self.get_conf('opened_notebooks'):
             self.open_notebook(filenames)
         else:
             self.tabwidget.maybe_create_welcome_client()

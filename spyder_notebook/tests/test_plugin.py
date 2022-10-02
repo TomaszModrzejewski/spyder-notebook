@@ -49,12 +49,11 @@ def prompt_present(nbwidget, qtbot):
 
 def text_present(nbwidget, qtbot, text="Test"):
     """Check if a text is present in the notebook."""
-    if WEBENGINE:
-        with qtbot.waitCallback(timeout=CALLBACK_TIMEOUT) as cb:
-            nbwidget.dom.toHtml(cb)
-        return text in cb.args[0]
-    else:
+    if not WEBENGINE:
         return text in nbwidget.dom.toHtml()
+    with qtbot.waitCallback(timeout=CALLBACK_TIMEOUT) as cb:
+        nbwidget.dom.toHtml(cb)
+    return text in cb.args[0]
 
 
 def manage_save_dialog(qtbot, fname, directory=LOCATION):
@@ -80,13 +79,7 @@ def is_kernel_up(kernel_id, sessions_url):
     sessions_req = requests.get(sessions_url).content.decode()
     sessions = json.loads(sessions_req)
 
-    kernel = False
-    for session in sessions:
-        if kernel_id == session['kernel']['id']:
-            kernel = True
-            break
-
-    return kernel
+    return any(kernel_id == session['kernel']['id'] for session in sessions)
 
 
 # =============================================================================

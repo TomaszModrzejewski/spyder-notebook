@@ -20,10 +20,7 @@ class DOMWidget(WebView):
     def __init__(self, parent):
         """Constructor."""
         super().__init__(parent)
-        if WEBENGINE:
-            self.dom = self.page()
-        else:
-            self.dom = self.page().mainFrame()
+        self.dom = self.page() if WEBENGINE else self.page().mainFrame()
 
     def evaluate(self, script):
         """
@@ -32,9 +29,9 @@ class DOMWidget(WebView):
         :param script: The script to evaluate.
         """
         if WEBENGINE:
-            return self.dom.runJavaScript("{}".format(script))
+            return self.dom.runJavaScript(f"{script}")
         else:
-            return self.dom.evaluateJavaScript("{}".format(script))
+            return self.dom.evaluateJavaScript(f"{script}")
 
     def mousedown(self, selector, btn=0):
         """
@@ -60,5 +57,5 @@ class DOMWidget(WebView):
     def set_input_value(self, selector, value):
         """Set the value of the input matched by given selector."""
         script = 'document.querySelector("%s").setAttribute("value", "%s")'
-        script = script % (selector, value)
+        script %= (selector, value)
         self.evaluate(script)

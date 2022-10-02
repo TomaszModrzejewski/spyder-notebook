@@ -183,20 +183,19 @@ class ServerManager(QObject):
             File name of Python interpreter to be used.
         """
         home_dir = get_home_dir()
-        if filename.startswith(home_dir):
-            nbdir = home_dir
-        else:
-            nbdir = osp.dirname(filename)
-
+        nbdir = home_dir if filename.startswith(home_dir) else osp.dirname(filename)
         logger.debug('Starting new notebook server for %s', nbdir)
         process = QProcess(None)
         serverscript = osp.join(osp.dirname(__file__), '../server/main.py')
         serverscript = osp.normpath(serverscript)
-        arguments = [serverscript, '--no-browser',
-                     '--notebook-dir={}'.format(nbdir),
-                     '--NotebookApp.password=',
-                     '--KernelSpecManager.kernel_spec_class={}'.format(
-                           KERNELSPEC)]
+        arguments = [
+            serverscript,
+            '--no-browser',
+            f'--notebook-dir={nbdir}',
+            '--NotebookApp.password=',
+            f'--KernelSpecManager.kernel_spec_class={KERNELSPEC}',
+        ]
+
         if self.dark_theme:
             arguments.append('--dark')
         logger.debug('Arguments: %s', repr(arguments))
@@ -248,7 +247,7 @@ class ServerManager(QObject):
 
         pid = server_process.process.processId()
         runtime_dir = jupyter_runtime_dir()
-        filename = osp.join(runtime_dir, 'nbserver-{}.json'.format(pid))
+        filename = osp.join(runtime_dir, f'nbserver-{pid}.json')
 
         try:
             with open(filename, encoding='utf-8') as f:
