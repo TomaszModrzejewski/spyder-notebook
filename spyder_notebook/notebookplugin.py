@@ -42,8 +42,7 @@ class NotebookPlugin(SpyderDockablePlugin):
     @staticmethod
     def get_name():
         """Return plugin name."""
-        title = _('Notebook')
-        return title
+        return _('Notebook')
 
     def get_description(self):
         """Return the plugin description."""

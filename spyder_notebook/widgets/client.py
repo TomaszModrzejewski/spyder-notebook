@@ -114,7 +114,7 @@ class NotebookWidget(DOMWidget):
             will be added.
         """
         super().__init__(parent)
-        self.CONTEXT_NAME = str(id(self))
+        self.CONTEXT_NAME = id(self)
         self.setup()
         self.actions = actions
 
@@ -146,11 +146,7 @@ class NotebookWidget(DOMWidget):
         if QApplication.keyboardModifiers() & Qt.ShiftModifier:
             return QWebEngineView.contextMenuEvent(self, event)
 
-        if self.actions is None:
-            actions = []
-        else:
-            actions = self.actions + [None]
-
+        actions = [] if self.actions is None else self.actions + [None]
         actions += [
             self.pageAction(QWebEnginePage.SelectAll),
             self.pageAction(QWebEnginePage.Copy),
@@ -181,9 +177,7 @@ class NotebookWidget(DOMWidget):
 
     def show_kernel_error(self, error):
         """Show kernel initialization errors."""
-        # Remove unneeded blank lines at the beginning
-        eol = sourcecode.get_eol_chars(error)
-        if eol:
+        if eol := sourcecode.get_eol_chars(error):
             error = error.replace(eol, '<br>')
         # Don't break lines in hyphens
         # From http://stackoverflow.com/q/7691569/438386
@@ -306,8 +300,7 @@ class NotebookClient(QFrame):
 
     def add_token(self, url):
         """Add notebook token to a given url."""
-        token_url = url + '?token={}'.format(self.token)
-        return token_url
+        return f'{url}?token={self.token}'
 
     def register(self, server_info):
         """Register attributes that can be computed with the server info."""
@@ -333,10 +326,7 @@ class NotebookClient(QFrame):
 
     def go_to(self, url_or_text):
         """Go to page URL."""
-        if isinstance(url_or_text, str):
-            url = QUrl(url_or_text)
-        else:
-            url = url_or_text
+        url = QUrl(url_or_text) if isinstance(url_or_text, str) else url_or_text
         self.notebookwidget.load(url)
 
     def load_notebook(self):
@@ -408,23 +398,16 @@ class NotebookClient(QFrame):
             QMessageBox.warning(self, _('Server error'), msg)
             return None
 
-        if os.name == 'nt':
-            path = self.path.replace('\\', '/')
-        else:
-            path = self.path
-
+        path = self.path.replace('\\', '/') if os.name == 'nt' else self.path
         sessions = json.loads(sessions_response.content.decode())
         for session in sessions:
             notebook_path = session.get('notebook', {}).get('path')
             if notebook_path is not None and notebook_path == path:
-                kernel_id = session['kernel']['id']
-                return kernel_id
+                return session['kernel']['id']
 
     def shutdown_kernel(self):
         """Shutdown the kernel of the client."""
-        kernel_id = self.get_kernel_id()
-
-        if kernel_id:
+        if kernel_id := self.get_kernel_id():
             delete_url = self.add_token(url_path_join(self.server_url,
                                                       'api/kernels/',
                                                       kernel_id))

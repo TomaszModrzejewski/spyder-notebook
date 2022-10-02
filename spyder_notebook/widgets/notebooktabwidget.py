@@ -5,6 +5,7 @@
 
 """File implementing NotebookTabWidget."""
 
+
 # Standard library imports
 import logging
 import os
@@ -40,7 +41,7 @@ WELCOME_DARK = osp.join(PACKAGE_PATH, 'utils', 'templates',
                         'welcome-dark.html')
 
 # Filter to use in file dialogs
-FILES_FILTER = '{} (*.ipynb)'.format(_('Jupyter notebooks'))
+FILES_FILTER = f"{_('Jupyter notebooks')} (*.ipynb)"
 
 # How long to wait after save before checking whether file exists (in ms)
 WAIT_SAVE_DELAY = 250
@@ -99,7 +100,7 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         self.server_manager.sig_server_errored.connect(
             self.handle_server_timed_out_or_error)
 
-        if not sys.platform == 'darwin':
+        if sys.platform != 'darwin':
             # Don't set document mode to true on OSX because it generates
             # a crash when the console is detached from the main window
             # Fixes spyder-ide/spyder#561
@@ -149,7 +150,7 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         if not filename:
             if not osp.isdir(NOTEBOOK_TMPDIR):
                 os.makedirs(NOTEBOOK_TMPDIR)
-            nb_name = 'untitled' + str(self.untitled_num) + '.ipynb'
+            nb_name = f'untitled{str(self.untitled_num)}.ipynb'
             filename = osp.join(NOTEBOOK_TMPDIR, nb_name)
             kernelspec = dict(display_name='Python 3 (Spyder)',
                               name='python3')
@@ -161,9 +162,9 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         client = NotebookClient(self, filename, self.actions)
         self.add_tab(client)
         interpreter = self.get_interpreter()
-        server_info = self.server_manager.get_server(
-            filename, interpreter, start=True)
-        if server_info:
+        if server_info := self.server_manager.get_server(
+            filename, interpreter, start=True
+        ):
             logger.debug('Using existing server at %s',
                          server_info['notebook_dir'])
             client.register(server_info)
@@ -182,12 +183,11 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         -------
         The file name of the interpreter
         """
-        pyexec = self.get_conf(
+        return self.get_conf(
             option='executable',
             section='main_interpreter',
-            default=get_python_executable()
+            default=get_python_executable(),
         )
-        return pyexec
 
     def maybe_create_welcome_client(self):
         """
@@ -308,8 +308,7 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         -------
         True if notebook is empty or on timeout, False otherwise.
         """
-        for iteration in range(WAIT_SAVE_ITERATIONS):
-
+        for _ in range(WAIT_SAVE_ITERATIONS):
             # Wait a bit
             wait_save = QEventLoop()
             QTimer.singleShot(WAIT_SAVE_DELAY, wait_save.quit)
@@ -322,15 +321,14 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
                 continue
 
             # If empty, we are done
-            if (len(nb_contents['cells']) == 0
-                    or len(nb_contents['cells'][0]['source']) == 0):
-                return True
-            else:
-                return False
-        else:
-            # It is taking longer than expected;
-            # Just return True and hope for the best
-            return True
+            return (
+                len(nb_contents['cells']) == 0
+                or len(nb_contents['cells'][0]['source']) == 0
+            )
+
+        # It is taking longer than expected;
+        # Just return True and hope for the best
+        return True
 
     def save_as(self, name=None, reopen_after_save=True):
         """
@@ -359,10 +357,7 @@ class NotebookTabWidget(Tabs, SpyderConfigurationAccessor):
         current_client = self.currentWidget()
         current_client.save()
         original_path = current_client.get_filename()
-        if not name:
-            original_name = osp.basename(original_path)
-        else:
-            original_name = name
+        original_name = name or osp.basename(original_path)
         filename, _selfilter = getsavefilename(self, _("Save notebook"),
                                                original_name, FILES_FILTER)
         if not filename:

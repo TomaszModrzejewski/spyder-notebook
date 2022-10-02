@@ -99,7 +99,7 @@ def test_start_server(mocker, dark, under_home):
     args = mock_QProcess.return_value.start.call_args[0]
     import spyder_notebook.server.main
     assert args[1][0] == spyder_notebook.server.main.__file__
-    assert '--notebook-dir={}'.format(nbdir) in args[1]
+    assert f'--notebook-dir={nbdir}' in args[1]
     assert ('--dark' in args[1]) == dark
     assert len(serverManager.servers) == 1
     assert serverManager.servers[0].process == mock_QProcess.return_value

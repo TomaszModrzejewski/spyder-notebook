@@ -33,7 +33,7 @@ BUILD_DIR = osp.join(SERVER_DIR, 'build')
 
 def run(cmd, *args, **kwargs):
     """Echo a command before running it."""
-    distutils.log.info('> ' + list2cmdline(cmd))
+    distutils.log.info(f'> {list2cmdline(cmd)}')
     kwargs['shell'] = (sys.platform == 'win32')
     return subprocess.check_call(cmd, *args, **kwargs)
 
@@ -63,11 +63,10 @@ class my_sdist(sdist):
 
 
 # Verify that BUILD_DIR exist before trying to build wheels
-if any([arg == 'bdist_wheel' for arg in sys.argv]):
-    if not osp.isdir(BUILD_DIR):
-        print("\nERROR: Server components are missing!! Please run "
-              "'python setup.py sdist' first.\n")
-        sys.exit(1)
+if any(arg == 'bdist_wheel' for arg in sys.argv) and not osp.isdir(BUILD_DIR):
+    print("\nERROR: Server components are missing!! Please run "
+          "'python setup.py sdist' first.\n")
+    sys.exit(1)
 
 
 REQUIREMENTS = [
